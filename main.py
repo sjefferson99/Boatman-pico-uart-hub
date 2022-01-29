@@ -97,8 +97,23 @@ print("initialising LED")
 led = machine.Pin(25, machine.Pin.OUT)
 
 #init I2C
-print("initialising IO")
-#TODO I2C init
+print("initialising I2C Bus")
+#Configure I2C bus
+sdapin=machine.Pin(16)
+sclpin=machine.Pin(17)
+i2c=machine.I2C(0,sda=sdapin, scl=sclpin, freq=100000)
+
+#Scan I2C bus
+print('Scan i2c bus...')
+devices = i2c.scan()
+
+if len(devices) == 0:
+    print("No i2c device !")
+else:
+    print('i2c devices found:',len(devices))
+
+for device in devices:
+    print("Decimal address: ",device," | Hexa address: ",hex(device))
 
 #Init UART
 print("initialising UART")
@@ -128,23 +143,6 @@ is_master_hub = True # override
 #             print("No Pi server found on UART, configuring as target on I2C bus")
 
 print("is_master_hub: {}".format(is_master_hub))
-
-#Configure I2C bus
-sda=machine.Pin(16)
-scl=machine.Pin(17)
-i2c=machine.I2C(0,sda=sda, scl=scl, freq=400000)
-
-#Scan I2C bus
-print('Scan i2c bus...')
-devices = i2c.scan()
-
-if len(devices) == 0:
-    print("No i2c device !")
-else:
-    print('i2c devices found:',len(devices))
-
-for device in devices:
-    print("Decimal address: ",device," | Hexa address: ",hex(device))
 
 #General variables
 print("initialising general config")
