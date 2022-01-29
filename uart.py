@@ -7,15 +7,15 @@ def start_uart():
     print(uart)
     return uart
 
-def poll_uart(uart):
+def poll_uart(serial):
     jsondata = ""
-    if uart.any():
-        data = uart.read()
+    if serial.any():
+        data = serial.read()
         jsondata = json.loads(data)
         print("Debug SignalK - {}".format(jsondata))
 
     return jsondata
 
-def uart_send(uart, uartdata):
-  uart.write(uartdata.encode('utf-8'))
+def uart_send(serial, uartdata):
+  serial.write(uartdata.encode('utf-8'))
   return 0
