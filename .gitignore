@@ -1,1 +1,6 @@
-/.vscode
+/.vscode/*
+!/.vscode/Pico-Stub/
+/.vscode/Pico-Stub/*
+!/.vscode/Pico-Stub/stubs
+/.vscode/Pico-Stub/stubs/*
+!/.vscode/Pico-Stub/stubs/picodisplay
