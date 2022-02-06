@@ -57,6 +57,14 @@ if pico_lights_enable:
     else:
         debug("Pico lights controller not found on bus, disabling module")
         pico_lights_enable = False
+    
+    lights_module_version = lights.get_version()
+    debug("Lights version: {}".format(lights_module_version))
+    if lights_module_version != bytearray(lights.version): #TODO make this tidier
+        debug("Lights module version does not equal hub lights module version, disabling lights module, please upgrade hub and module to same version")
+        pico_lights_enable = False
+    else:
+        debug("Lights hub version matches module version")
 
 else:
     debug("No I2C devices found")

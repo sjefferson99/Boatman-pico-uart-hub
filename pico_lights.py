@@ -12,7 +12,8 @@
 #
 # 0b1xxxxxxx: Get/set config data
 # 0b10000001: Get module ID - Pico lights should return 0b00000010
-# 0b10000010: Get group assignments
+# 0b10000010: Get version
+# 0b10000011: Get group assignments
 
 from machine import I2C
 
@@ -44,7 +45,13 @@ class pico_light_controller:
         return returnData
     
     def get_version(self):
-        ...
+        command_byte = 0b10000010
+        data = []
+        data.append(command_byte)
+        self.send_data(data)        
+        #Expect 3 byte status return
+        returnData = self.i2c1.readfrom(self.I2C_address, 3)
+        return returnData
 
     def check_bus(self) -> bool:
         #Is device at this address
