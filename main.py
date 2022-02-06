@@ -1,3 +1,6 @@
+#If the display module is enabled, the Pico will need to be flashed with Pimoroni micropython
+#https://github.com/pimoroni/pimoroni-pico
+
 import machine
 import json
 
@@ -10,6 +13,14 @@ def debug(message):
 #Enables printing debug messages
 global debugEnable
 debugEnable = True
+
+#Enable pico display module
+#https://shop.pimoroni.com/products/pico-display-pack
+#TODO detect display and enable if present
+displayEnable = True
+
+if displayEnable:
+    import bmdisplay
 
 #Config I2C
 sda1 = machine.Pin(2)
@@ -45,7 +56,7 @@ debug("command register config")
 #01GRIIII Set LED values
 #data byte LED duty cycle
 
-group = True #(G)
+group = False #(G)
 reset = True #(R)
 id = 1 # (IIII)
 duty = 255
