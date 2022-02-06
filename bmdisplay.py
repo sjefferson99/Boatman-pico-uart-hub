@@ -10,6 +10,16 @@ def debug(message):
     if debugEnable:
         print(message)
 
+def is_button_timeout(): #TODO doesn't actually work as references out of scope vars - may not stay as a function
+    #Non intterupt check for user input timeout
+    if ticks_diff(ticks_ms(), lastactivity) > modetimeout: #,current_mode <> 0
+        debug("timing out config mode")
+        #current_mode = 0
+        #disp_refresh = 1
+        return True
+    else:
+        return False
+
 #Enables printing debug messages
 global debugEnable
 debugEnable = True
@@ -18,11 +28,17 @@ debugEnable = True
 debug("initialising display, LED and buttons")
 buf = bytearray(picodisplay.get_width() * picodisplay.get_height() * 2)
 picodisplay.init(buf)
+
+#Start up vars
 picodisplay.set_backlight(1.0)
 
-picodisplay.set_pen(0, 255, 0)                      # Set a green pen
+#Preferences
+background_pen = picodisplay.create_pen(0, 255, 0)
+text_pen = picodisplay.create_pen(255, 255, 255)
+
+picodisplay.set_pen(background_pen)                      # Set a green pen
 picodisplay.clear()                                 # Clear the display buffer
-picodisplay.set_pen(255, 255, 255)                  # Set a white pen
+picodisplay.set_pen(text_pen)                  # Set a white pen
 picodisplay.text("BoatMan", 10, 10, 240, 4)         # Add some text
 picodisplay.text("Boat Manager", 10, 50, 240, 2)    # Add some text
 picodisplay.update()                                # Update the display with our changes
@@ -106,11 +122,7 @@ config_items = {0: {"label": "option_1", "value" : True}, 1: {"label": "option_2
 
 
 """
-    #Config time out
-    if ticks_diff(ticks_ms(), lastactivity) > modetimeout and current_mode != 0:
-    print("timing out config mode")
-    current_mode = 0
-    disp_refresh = 1
+
 
         if current_mode == 0:   #run mode
             if disp_refresh == 1:    #Update display
