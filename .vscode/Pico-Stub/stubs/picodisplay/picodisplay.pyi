@@ -59,12 +59,21 @@ def update():
     """
     ...
 
-def set_pen(r: int, g: int, b: int):
+def set_pen(r_or_pen: int, g: int = 0, b: int = 0):
     """
     Sets the colour to be used by subsequent calls to drawing functions. The
     values for r, g and b should be from 0-255 inclusive.
 
     picodisplay.set_pen(r, g, b)
+
+    Arguments g and b do not actually default to 0, but passing only one
+    argument assumes a create_pen object, this allows pylance to accept one
+    argument in this scenario.
+
+    Can also accept a create_pen variable in place of r,g,b
+    
+    pen_colour = picodisplay.create_pen(r, g, b)
+    picodisplay.set_pen(penColour)
     """
     ...
 
