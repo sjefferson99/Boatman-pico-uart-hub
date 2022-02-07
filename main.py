@@ -58,9 +58,10 @@ if pico_lights_enable:
         debug("Pico lights controller not found on bus, disabling module")
         pico_lights_enable = False
     
-    lights_module_version = lights.get_version()
+    lights_module_version = lights.get_version().decode('ansi')
     debug("Lights version: {}".format(lights_module_version))
-    if lights_module_version != bytearray(lights.version): #TODO make this tidier
+    
+    if lights_module_version != lights.version:
         debug("Lights module version does not equal hub lights module version, disabling lights module, please upgrade hub and module to same version")
         pico_lights_enable = False
     else:
