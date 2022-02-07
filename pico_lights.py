@@ -16,6 +16,7 @@
 # 0b10000011: Get group assignments
 
 from machine import I2C
+import json
 
 class pico_light_controller:
     
@@ -57,7 +58,7 @@ class pico_light_controller:
         #Is device at this address
         devices = self.i2c1.scan()
         if self.I2C_address in devices:
-            #Confirm matchign module ID
+            #Confirm matching module ID
             if self.get_module_id() == self.moduleID:
                 return True
             else:
@@ -65,8 +66,20 @@ class pico_light_controller:
         else:
             return False
 
-    def get_groups(self):
-        ...
+    def get_groups(self) -> dict:
+        command_byte = 0b10000011
+        data = []
+        data.append(command_byte)
+        self.send_data(data)    
+        #Expect 2 byte length data return
+        returnData = self.i2c1.readfrom(self.I2C_address, 2)
+        length = int.from_bytes(returnData, "big")
+        #Expects immediate send of the group config data in JSON, byte count specified above
+        returnData = self.i2c1.readfrom(self.I2C_address, length)
+        #Populate updated LED groups config data dict
+        led_groups = {}
+        led_groups = json.loads(returnData)
+        return led_groups
 
     def set_light(self):
         ...
