@@ -35,7 +35,7 @@ class pico_light_controller:
         sendData = bytearray(data)
         self.i2c1.writeto(self.I2C_address, sendData)
 
-    def get_module_id(self):
+    def get_module_id(self) -> int:
         command_byte = 0b10000001
         data = []
         data.append(command_byte)
@@ -45,13 +45,14 @@ class pico_light_controller:
         returnData = int(returnData[0])
         return returnData
     
-    def get_version(self):
+    def get_version(self) -> str:
         command_byte = 0b10000010
         data = []
         data.append(command_byte)
         self.send_data(data)        
         #Expect 3 byte status return
         returnData = self.i2c1.readfrom(self.I2C_address, 3)
+        returnData = returnData.decode('ansi')
         return returnData
 
     def check_bus(self) -> bool:
