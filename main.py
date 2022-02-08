@@ -58,7 +58,7 @@ if pico_lights_enable:
         debug("Pico lights controller not found on bus, disabling module")
         pico_lights_enable = False
     
-    lights_module_version = lights.get_version().decode('ansi')
+    lights_module_version = lights.get_version()
     debug("Lights version: {}".format(lights_module_version))
     
     if lights_module_version != lights.version:

@@ -52,6 +52,7 @@ class pico_light_controller:
         self.send_data(data)        
         #Expect 3 byte status return
         returnData = self.i2c1.readfrom(self.I2C_address, 3)
+        returnData = returnData.decode('ansi')
         return returnData
 
     def check_bus(self) -> bool:
