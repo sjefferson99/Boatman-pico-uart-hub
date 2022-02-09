@@ -56,27 +56,28 @@ if pico_lights_enable:
     debug("Pico light module enabled")
     lights = pico_light_controller(i2c1, pico_lights_address)
     debug(lights.I2C_address)
+    
     if lights.check_bus():
         debug("Pico lights controller found on bus")
+
+        lights_module_version = lights.get_version()
+        debug("Lights version: {}".format(lights_module_version))
+    
+        if lights_module_version != lights.version:
+            debug("Lights module version does not equal hub lights module version, disabling lights module, please upgrade hub and module to same version")
+            pico_lights_enable = False
+        else:
+            debug("Lights hub version matches module version")
+            #Load group config from lights module
+            debug("Loading group config from lights module")
+            lights.get_groups() #type: ignore
+
     else:
         debug("Pico lights controller not found on bus, disabling module")
         pico_lights_enable = False
-    
-    lights_module_version = lights.get_version()
-    debug("Lights version: {}".format(lights_module_version))
-    
-    if lights_module_version != lights.version:
-        debug("Lights module version does not equal hub lights module version, disabling lights module, please upgrade hub and module to same version")
-        pico_lights_enable = False
-    else:
-        debug("Lights hub version matches module version")
 
 else:
     debug("No I2C devices found")
-
-#Load group config from lights module
-debug("Loading group config from lights module")
-lights.get_groups() #type: ignore
 
 while True:
     debug("Entering program loop", 2)
@@ -93,14 +94,19 @@ while True:
             debug("Valid JSON received", 2)
 
             if "Light control" in serialdata[1]:
-                debug("Light control command received: {}".format(serialdata[1]["Light control"]))
+                if pico_lights_enable:
+                    debug("Light control command received: {}".format(serialdata[1]["Light control"]))
 
-                command = serialdata[1]["Light control"]
-                returncode = serial.light_controls(lights, command) #type: ignore
-                debug(returncode)
+                    command = serialdata[1]["Light control"]
+                    returncode = serial.light_controls(lights, command) #type: ignore
+                    debug(returncode)
 
-                #Send command value back on serial UART
-                serial.send_bmserial(str(serialdata[1]["Light control"]))
+                    #Send command value back on serial UART
+                    serial.send_bmserial(str(serialdata[1]["Light control"]))
+
+                else:
+                    debug("Light command received but module disabled")
+                    serial.send_bmserial("Light module disabled")
 
     #For each enabled module, do module loop activities
     if display_enable:
