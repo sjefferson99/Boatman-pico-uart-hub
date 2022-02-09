@@ -1,5 +1,6 @@
 from machine import UART
 import json
+from pico_lights import pico_light_controller
 
 class bmserial:
     """
@@ -42,3 +43,22 @@ class bmserial:
     def send_bmserial(self, data: str) -> int:
         self.interface.write(data.encode('utf-8'))
         return 0
+    
+    def light_controls(self, lights: pico_light_controller, command: dict) -> int:
+        returncode = 0
+
+        reset = False
+        if command["reset"] == "True":
+            reset = True
+        group = command["group"]
+        id = int(command["id"])
+        duty = int(command["duty"])
+        if group == "False":
+            returncode = lights.set_light(reset, id, duty)
+        else:
+            returncode = lights.set_group(reset, id, duty)
+            if returncode == -2:
+                lights.get_groups()
+                returncode = lights.set_group(reset, id, duty)
+
+        return returncode
