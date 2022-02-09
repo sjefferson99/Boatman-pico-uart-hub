@@ -173,9 +173,6 @@ class pico_light_controller:
             if str(id) in self.led_groups: #TODO fix received groups JSON so ints are not strings
                 command_byte += id
             else:
-                print("ID: {}".format(id))
-                print("ID not in local group config")
-                print(self.led_groups)
                 return -30 #Group ID not in local config 
         else:
             return -10 #Light ID out of range
