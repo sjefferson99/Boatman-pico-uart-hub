@@ -142,97 +142,45 @@ class pico_light_controller:
                 d+= 40
         return
 
-    def set_group(self):
-        ...
-
-"""
-
-
-
-
-#10000000 Get/set config data
-#10000001 Get group assignments
-
-#01GRIIII Set LED values
-#data byte LED duty cycle
-
-group = False #(G)
-reset = True #(R)
-id = 1 # (IIII)
-duty = 255
-
-commandRegister = 0b00000000
-
-if id < 16:
-    debug("LED ID is good") #TODO look up LED and group IDs in config dictsto check properly
-    commandRegister = 0b01000000 + id # Set value command
-
-    if group:
-        commandRegister = commandRegister + 0b00100000
-
-    if reset:
-        commandRegister = commandRegister + 0b00010000
-
-else:
-    debug("Bad ID")
-
-debug("Command register: ")
-debug(commandRegister)
-
-data = []
-data.append(commandRegister)
-data.append(duty)
-
-#Fill output buffer with 8 bytes as I2C responder reads 8 into input buffer and will load known data into the buffer where bytes < 8
-while len(data) < 8:
-    data.append(0)
-
-sendData = bytearray(data)
-
-#Check the I2C target exists
-if i2c_lights in devices:
-    #Send command byte and duty data
-    i2c1.writeto(i2c_lights, sendData)
-    #Expect one byte status return
-    returnData = i2c1.readfrom(i2c_lights, 1)
-    debug(returnData)
-    returnData = int(returnData[0])
-    debug(returnData)
-
-    #Return code is error
-    if returnData > 0:
-        #Group config is potentially out of sync
-        if returnData & 0b00000010:
-            debug("Group config is potentially out of sync, reloading")
-            #Build a reload group config command
-            data = []
-            data.append(0b10000001)
-            #Pack spare bytes up to 8 with 0s
-            while len(data) < 8:
-                data.append(0)
-            sendData = bytearray(data)
-            i2c1.writeto(i2c_lights, sendData)
-            #Expected return from group config update is number of bytes of data to be sent in 2 byte big endian format
-            incomingBytes = i2c1.readfrom(i2c_lights, 2)
-            debug(incomingBytes)
-            length = int.from_bytes(incomingBytes, "big")
-            debug(length)
-            #Expects immediate send of the group config data in JSON, byte count specified above
-            returnData = i2c1.readfrom(i2c_lights, length)
-            debug(returnData)
-            #Populate updated LED groups config data dict
-            led_groups = {}
-            led_groups = json.loads(returnData)
-            debug(led_groups)
-
+    def set_group(self, reset: bool, id: int, duty: int) -> int:
+        """
+        reset: true = set all other lights off and apply this group configuration only
+        id: 4 bit (0-15) ID of the group to configure
+        duty: 16 bit (0-255) duty for the light PWM fader, 0=off, 255=fully on
+        Returns 0 on success or error code
+        
+        Error codes:
+        -1: Command not recognised by pico_lights module
+        -2: Pico_lights module group config out of sync
+        -10: Group ID out of range
+        -20: Duty value out of range
+        -30: Group ID not in local config
+        """
+        
+        data = []
+        command_byte = self.set_light_bits + self.group_bit
+        if id >=0 and id <= 15:
+            if id in self.led_groups:
+                command_byte += id
+            else:
+                print("ID: {}".format(id))
+                print("ID not in local group config")
+                print(self.led_groups)
+                return -30 #Group ID not in local config 
         else:
-            #Non zero but unknown return code
-            debug("unknown error")
+            return -10 #Light ID out of range
+        
+        if reset:
+            command_byte += self.reset_bit
 
-    else:
-        debug("Successful update")
+        data.append(command_byte)
 
-else:
-    debug("Target device not present on I2C bus")
-
-"""
+        if duty >=0 and id <=255:
+            data.append(duty)    
+        else:
+            return -20 #Duty out of range
+        
+        self.send_data(data)        
+        #Expect 1 byte status return
+        returnData = self.i2c1.readfrom(self.I2C_address, 1)
+        return int.from_bytes(returnData, "big") * -1
