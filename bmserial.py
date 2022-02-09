@@ -40,6 +40,6 @@ class bmserial:
 
         return serialdata
 
-    def uart_send(self, data) -> int:
+    def send_bmserial(self, data: str) -> int:
         self.interface.write(data.encode('utf-8'))
         return 0

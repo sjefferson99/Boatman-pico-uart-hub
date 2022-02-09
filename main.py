@@ -91,6 +91,9 @@ while True:
             if "Test command" in serialdata[1]:
                 print("Test command received: {}".format(serialdata[1]["Test command"]))
 
+                #Send command value back on serial UART
+                serial.send_bmserial(str(serialdata[1]["Test command"]))
+
     #For each enabled module, do module loop activities
     if display_enable:
         debug("Display loop activities", 2)
