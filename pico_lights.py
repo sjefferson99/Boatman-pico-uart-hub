@@ -85,9 +85,8 @@ class pico_light_controller:
         #Expects immediate send of the group config data in JSON, byte count specified above
         returnData = self.i2c1.readfrom(self.I2C_address, length)
         #Populate updated LED groups config data dict
-        led_groups = {}
-        led_groups = json.loads(returnData)
-        return led_groups
+        self.led_groups = json.loads(returnData)
+        return self.led_groups
 
     def set_light(self, reset: bool, id: int, duty: int) -> int:
         """
