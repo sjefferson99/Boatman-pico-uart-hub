@@ -31,7 +31,6 @@ class bmserial:
         if self.interface.any():
             data = self.interface.read()
             try:
-                data = data.decode('ansi') #type: ignore
                 serialdata.append(json.loads(data)) #type: ignore
                 serialdata[0] = 1
             except:
