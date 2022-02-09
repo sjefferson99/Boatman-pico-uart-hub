@@ -100,14 +100,25 @@ class pico_light_controller:
         -10: Light ID out of range
         -20: Duty value out of range
         """
+
+        command_byte = self.set_light_bits
+
         if id >=0 and id <=15:
-            command_byte = self.set_light_bits + id
+            command_byte += id
         else:
             return -10 #Light ID out of range
+        
         if reset:
             command_byte += self.reset_bit
+        
         data = []
         data.append(command_byte)
+
+        if duty >=0 and duty <=255:
+            data.append(duty)    
+        else:
+            return -20 #Duty out of range
+
         data.append(duty)
         self.send_data(data)        
         #Expect 1 byte status return
