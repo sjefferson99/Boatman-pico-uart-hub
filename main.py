@@ -3,9 +3,9 @@
 
 from utime import sleep_ms
 from machine import Pin, I2C
-import bmdisplay
-import pico_lights
-import bmserial
+#import bmdisplay
+from pico_lights import pico_light_controller
+from bmserial import bmserial
 
 #Deals with debug messages appropriately
 def debug(message, verbosity = 0):
@@ -43,7 +43,7 @@ debug("Init I2C")
 i2c1 = I2C(1, sda=sda1, scl=scl1, freq=i2c1_freq)
 
 # Init UART
-serial = bmserial.bmserial()
+serial = bmserial()
 
 #Scan i2C bus for devices
 debug('i2c1 devices found at')
@@ -54,7 +54,7 @@ if devices:
 
 if pico_lights_enable:
     debug("Pico light module enabled")
-    lights = pico_lights.pico_light_controller(i2c1, pico_lights_address)
+    lights = pico_light_controller(i2c1, pico_lights_address)
     debug(lights.I2C_address)
     if lights.check_bus():
         debug("Pico lights controller found on bus")
@@ -74,6 +74,10 @@ if pico_lights_enable:
 else:
     debug("No I2C devices found")
 
+#Load group config from lights module
+debug("Loading group config from lights module")
+lights.get_groups() #type: ignore
+
 while True:
     debug("Entering program loop", 2)
 
@@ -88,11 +92,15 @@ while True:
         if serialdata[0] == 1:
             debug("Valid JSON received", 2)
 
-            if "Test command" in serialdata[1]:
-                print("Test command received: {}".format(serialdata[1]["Test command"]))
+            if "Light control" in serialdata[1]:
+                debug("Light control command received: {}".format(serialdata[1]["Light control"]))
+
+                command = serialdata[1]["Light control"]
+                returncode = serial.light_controls(lights, command) #type: ignore
+                debug(returncode)
 
                 #Send command value back on serial UART
-                serial.send_bmserial(str(serialdata[1]["Test command"]))
+                serial.send_bmserial(str(serialdata[1]["Light control"]))
 
     #For each enabled module, do module loop activities
     if display_enable:
