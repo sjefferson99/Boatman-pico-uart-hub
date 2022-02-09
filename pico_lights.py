@@ -29,7 +29,10 @@ class pico_light_controller:
         self.led_groups = {}
         self.set_light_bits = 0b01000000
         self.group_bit = 0b00100000
-        self.reset_bit = 0b00010000        
+        self.reset_bit = 0b00010000
+        self.module_id_byte = 0b10000001
+        self.version_byte = 0b10000010
+        self.get_groups_byte = 0b10000011
 
     def send_data(self, data: list):
         
@@ -40,7 +43,7 @@ class pico_light_controller:
         self.i2c1.writeto(self.I2C_address, sendData)
 
     def get_module_id(self) -> int:
-        command_byte = 0b10000001
+        command_byte = self.module_id_byte
         data = []
         data.append(command_byte)
         self.send_data(data)        
@@ -50,7 +53,7 @@ class pico_light_controller:
         return returnData
     
     def get_version(self) -> str:
-        command_byte = 0b10000010
+        command_byte = self.version_byte
         data = []
         data.append(command_byte)
         self.send_data(data)        
@@ -72,7 +75,7 @@ class pico_light_controller:
             return False
 
     def get_groups(self) -> dict:
-        command_byte = 0b10000011
+        command_byte = self.get_groups_byte
         data = []
         data.append(command_byte)
         self.send_data(data)    
