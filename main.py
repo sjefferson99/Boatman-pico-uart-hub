@@ -5,6 +5,7 @@ from utime import sleep_ms
 from machine import Pin, I2C
 import bmdisplay
 import pico_lights
+import bmserial
 
 #Deals with debug messages appropriately
 def debug(message, verbosity = 0):
@@ -41,6 +42,9 @@ i2c1_freq = 100000
 debug("Init I2C")
 i2c1 = I2C(1, sda=sda1, scl=scl1, freq=i2c1_freq)
 
+# Init UART
+serial = bmserial.bmserial()
+
 #Scan i2C bus for devices
 debug('i2c1 devices found at')
 devices = i2c1.scan()
@@ -72,6 +76,23 @@ else:
 
 while True:
     debug("Entering program loop", 2)
+
+    #Poll serial for SignalK commands
+    debug("Polling serial in", 2)
+    serialdata = serial.poll_bmserial()
+    if serialdata[0] != 0:
+        debug(serialdata, 2)
+        debug(serialdata[0], 2)
+        debug(serialdata[1], 2)
+
+        if serialdata[0] == 1:
+            debug("Valid JSON received", 2)
+
+            if "Test command" in serialdata[1]:
+                print("Test command received: {}".format(serialdata[1]["Test command"]))
+
+                #Send command value back on serial UART
+                serial.send_bmserial(str(serialdata[1]["Test command"]))
 
     #For each enabled module, do module loop activities
     if display_enable:
