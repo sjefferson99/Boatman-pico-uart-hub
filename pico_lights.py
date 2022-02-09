@@ -159,7 +159,7 @@ class pico_light_controller:
         data = []
         command_byte = self.set_light_bits + self.group_bit
         if id >=0 and id <= 15:
-            if id in self.led_groups:
+            if str(id) in self.led_groups: #TODO fix received groups JSON so ints are not strings
                 command_byte += id
             else:
                 print("ID: {}".format(id))
