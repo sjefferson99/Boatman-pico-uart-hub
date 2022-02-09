@@ -4,7 +4,7 @@
 #
 # Command protocol:
 #
-# 0b01GRIIII 0bDDDDDDDD (6 bytes of 0) - set LED or LED group duty cycle
+# 0b01GRIIII 0bDDDDDDDD (6 bytes of 0) - set light or light group duty cycle
 # G: 1 = Group, 0 = Individual light
 # R: 1 = Reset other lights to duty cyle of 0, 0 = update only this target
 # IIII = 4 bit Light or Group ID
@@ -16,6 +16,7 @@
 # 0b10000011: Get group assignments
 
 from machine import I2C
+from time import sleep_ms
 import json
 
 class pico_light_controller:
@@ -26,6 +27,9 @@ class pico_light_controller:
         self.version = str("0.1")
         self.moduleID = 0b00000010
         self.led_groups = {}
+        self.set_light_bits = 0b01000000
+        self.group_bit = 0b00100000
+        self.reset_bit = 0b00010000        
 
     def send_data(self, data: list):
         
@@ -81,8 +85,58 @@ class pico_light_controller:
         led_groups = json.loads(returnData)
         return led_groups
 
-    def set_light(self):
-        ...
+    def set_light(self, reset: bool, id: int, duty: int) -> int:
+        """
+        reset: true = set all other lights off and apply this light configuration only
+        id: 4 bit (0-15) ID of the light to configure
+        duty: 16 bit (0-255) duty for the light PWM fader, 0=off, 255=fully on
+        Returns 0 on success or error code
+        
+        Error codes:
+        -1: Command not recognised by pico_lights module
+        -10: Light ID out of range
+        -20: Duty value out of range
+        """
+        if id >=0 and id <=15:
+            command_byte = self.set_light_bits + id
+        else:
+            return -10 #Light ID out of range
+        if reset:
+            command_byte += self.reset_bit
+        data = []
+        data.append(command_byte)
+        data.append(duty)
+        self.send_data(data)        
+        #Expect 1 byte status return
+        returnData = self.i2c1.readfrom(self.I2C_address, 1)
+        return int.from_bytes(returnData, "big") * -1
+    
+    def set_light_demo(self):
+        l = 0
+        while l <= 15:
+            self.set_light(True, l, 255)
+            sleep_ms(100)
+            l +=1
+        
+        while l >= 0:
+            self.set_light(True, l, 255)
+            sleep_ms(100)
+            l -=1
+        
+        self.set_light(True, 0, 0)
+
+        l=0
+        d=5
+        while d <= 255:
+            l=0
+            while l <= 15:
+                self.set_light(False, l, d)
+                sleep_ms(50)
+                l +=1
+            d += 10
+            if d > 100:
+                d+= 40
+        return
 
     def set_group(self):
         ...
