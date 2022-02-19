@@ -48,12 +48,12 @@ class bmserial:
         returncode = 0
 
         reset = False
-        if command["reset"] == "True":
+        if command["reset"] == True:
             reset = True
         group = command["group"]
         id = int(command["id"])
         duty = int(command["duty"])
-        if group == "False":
+        if group == False:
             returncode = lights.set_light(reset, id, duty)
         else:
             returncode = lights.set_group(reset, id, duty)
