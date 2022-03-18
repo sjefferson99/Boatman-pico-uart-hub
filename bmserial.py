@@ -6,6 +6,10 @@ class bmserial:
     """
     Communication over serial UART for passing SignalK data to and from SignalK servers
     UART is on Pico UART 0 at 115200 baud as per Pico Hub spec.
+    
+    Module provides functions for sending, receiving and parsing data in SignalK JSON format over the serial UART.
+    
+    ***SignalK JSON structure TBC***
     """
     
     def __init__(self) -> None:
