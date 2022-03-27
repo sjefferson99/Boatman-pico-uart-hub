@@ -191,3 +191,22 @@ class pico_light_controller:
         #Expect 1 byte status return
         returnData = self.i2c1.readfrom(self.I2C_address, 1)
         return int.from_bytes(returnData, "big") * -1
+
+    def light_controls(self, command: dict) -> int:
+        returncode = 0
+
+        reset = False
+        if command["reset"] == True:
+            reset = True
+        group = command["group"]
+        id = int(command["id"])
+        duty = int(command["duty"])
+        if group == False:
+            returncode = self.set_light(reset, id, duty)
+        else:
+            returncode = self.set_group(reset, id, duty)
+            if returncode == -2:
+                self.get_groups()
+                returncode = self.set_group(reset, id, duty)
+
+        return returncode

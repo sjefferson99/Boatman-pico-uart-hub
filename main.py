@@ -98,7 +98,7 @@ while True:
                     debug("Light control command received: {}".format(serialdata[1]["Light control"]))
 
                     command = serialdata[1]["Light control"]
-                    returncode = serial.light_controls(lights, command) #type: ignore
+                    returncode = lights.light_controls(command)
                     debug(returncode)
 
                     #Send command value back on serial UART
