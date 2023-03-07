@@ -1,3 +1,5 @@
+# Archived project - This functionality is now being continued in https://github.com/sjefferson99/pico-boat-assistant
+
 # Boatman hub with UART control and display v0.1
 
 ## Overview
